@@ -6,6 +6,7 @@ import gower
 import itertools
 from sklearn.model_selection import LeaveOneOut
 from sklearn.metrics import accuracy_score
+import scipy.spatial
 
 def precompute_fx(X: np.ndarray, Y: np.ndarray) -> t.Dict[str, t.Any]:
 
@@ -120,19 +121,67 @@ def ft_N4(X: np.ndarray, y: np.ndarray, cls_index: np.ndarray,
     error = 1 - accuracy_score(y_test_, pred_y_)
     return error
 
+def hyperspheres_radius(nearest_enemy_ind, nearest_enemy_dist):
+    def recurse_radius(ind_inst):
+        if radius[ind_inst] >= 0.0:
+            return radius[ind_inst]
+        ind_enemy = nearest_enemy_ind[ind_inst]
+        ind_enemy = int(ind_enemy)
+        if (ind_inst == nearest_enemy_ind[ind_enemy]):
+            radius[ind_enemy] = radius[ind_inst] = (0.5 * nearest_enemy_dist[ind_inst])
+            return radius[ind_inst]
+        radius[ind_inst] = 0.0
+        radius_enemy = recurse_radius(ind_inst=ind_enemy)
+        radius[ind_inst] = abs(nearest_enemy_dist[ind_inst] - radius_enemy)
+        return radius[ind_inst]
+    radius = np.full(nearest_enemy_ind.size, fill_value=-1.0, dtype=float)
+    for ind in np.arange(radius.size):
+        if radius[ind] < 0.0:
+            recurse_radius(ind_inst=ind)
+    return radius
+
+def hyper_in(center_a, center_b, radius_a, radius_b,):
+    upper_a, lower_a = center_a + radius_a, center_a - radius_a
+    upper_b, lower_b = center_b + radius_b, center_b - radius_b
+    for ind in np.arange(center_a.size):
+        if (upper_a[ind] > upper_b[ind]) or (lower_a[ind] < lower_b[ind]):
+            return False
+    return True
+
+def hyper_final(centers, radius):
+    sorted_sphere_inds = np.argsort(radius)
+    sphere_inst_num = np.ones(radius.size, dtype=int)
+    for ind_a, ind_sphere_a in enumerate(sorted_sphere_inds[:-1]):
+        for ind_sphere_b in sorted_sphere_inds[:ind_a:-1]:
+            if hyper_in(center_a=centers[ind_sphere_a, :], center_b=centers[ind_sphere_b, :],
+                radius_a=radius[ind_sphere_a],radius_b=radius[ind_sphere_b],):
+                sphere_inst_num[ind_sphere_b] += sphere_inst_num[ind_sphere_a]
+                sphere_inst_num[ind_sphere_a] = 0
+                break
+    return sphere_inst_num
+
+def ft_T1(X, Y):
+    nearest_enemy_ind = np.zeros(X.shape[0])
+    nearest_enemy_dist = np.zeros(X.shape[0])
+    dst = scipy.spatial.distance.cdist(X, X, metric="minkowski", p=2)
+    # dst = gower.gower_matrix(X)
+    for i in range(X.shape[0]):
+        minn = inter(X, Y, dst, i)
+        indexx = np.where(dst[i]==minn)[0]
+        nearest_enemy_dist[i] = minn
+        nearest_enemy_ind[i] = indexx[0]
+    radius = hyperspheres_radius(nearest_enemy_ind=nearest_enemy_ind,nearest_enemy_dist=nearest_enemy_dist,)
+    sphere_inst_count = hyper_final(centers=X, radius=radius)
+    t1 = sphere_inst_count[sphere_inst_count > 0].shape[0]/(X.shape[0]*np.unique(Y).shape[0])
+    return t1
+    
 """### 2.3.6 Local Set Average Cardinality (LSC)"""
 
-def LS_i (X: np.ndarray, y: np.ndarray, i: int):
-    dst = np.asarray(gower.gower_matrix(X))
-    dist_enemy = inter(X, y, dst, i)
-    counter = 0
-    for index in range(X.shape[0]):
-        if dst[i][index] < dist_enemy:
-            counter += 1
-    return counter
-
-def LSC (X: np.ndarray, y: np.ndarray) -> float:
-    n = np.shape(X)[0]
-    x = [LS_i(X, y, i) for i in range(n)]
-#     print(np.sum(x))
-    return 1 - np.sum(x)/n**2
+def LSC (X: np.ndarray, Y: np.ndarray) -> float:
+  nearest_enemy_dist = np.zeros(X.shape[0])
+  dst = gower.gower_matrix(X)
+  for i in range(X.shape[0]):
+    minn = inter(X, Y, dst, i)
+    nearest_enemy_dist[i] = minn
+    lsc = 1.0 - np.sum(dst < nearest_enemy_dist) / (X.shape[0] ** 2)
+  return lsc
