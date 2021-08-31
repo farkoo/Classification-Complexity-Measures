@@ -1,5 +1,6 @@
 import typing as t
 import numpy as np
+import math
 
 """## 2.1 Feature-based Measures
 
@@ -22,7 +23,11 @@ def denominator (X: np.ndarray, cls_index: np.ndarray, cls_n_ex: np.ndarray, f: 
 # according to aquation(2)
 
 def compute_rfi (X: np.ndarray, cls_index, cls_n_ex) -> float:
-    return [numerator (X, cls_index, cls_n_ex, i)/denominator(X, cls_index, cls_n_ex, i) for i in range(np.shape(X)[1])]
+  ls = []
+  for i in range(np.shape(X)[1]):
+    if denominator(X, cls_index, cls_n_ex, i)!= 0:
+      ls.append(numerator (X, cls_index, cls_n_ex, i)/denominator(X, cls_index, cls_n_ex, i))
+  return ls
 
 def ft_F1(X: np.ndarray, cls_index: np.ndarray, cls_n_ex: np.ndarray) -> float:
     return 1/(1 + np.max(compute_rfi (X, cls_index, cls_n_ex)))
@@ -36,7 +41,11 @@ def denominator (X: np.ndarray, cls_index, cls_n_ex, i) -> float:
 # according to aquation(3)
 
 def compute_rfi (X: np.ndarray, cls_index, cls_n_ex) -> float:
-    return [numerator (X, cls_index, cls_n_ex, i)/denominator(X, cls_index, cls_n_ex, i) for i in range(np.shape(X)[1])]
+  ls = []
+  for i in range(np.shape(X)[1]):
+    if denominator(X, cls_index, cls_n_ex, i)!= 0:
+      ls.append(numerator (X, cls_index, cls_n_ex, i)/denominator(X, cls_index, cls_n_ex, i))
+  return ls
 
 def ft_F1(X: np.ndarray, cls_index: np.ndarray, cls_n_ex: np.ndarray) -> float:
     return 1/(1 + np.max(compute_rfi (X, cls_index, cls_n_ex)))
@@ -48,7 +57,10 @@ def dVector(X: np.ndarray, y_class1: np.ndarray, y_class2: np.ndarray) -> float:
     X_class2 = X[y_class2]; u_class2 = np.mean(X_class2, axis= 0)
     W = ((np.shape(X_class1)[0]/ (np.shape(X_class1)[0] + np.shape(X_class2)[0]))* np.cov(X_class1.T)) \
      + (np.shape(X_class2)[0]/(np.shape(X_class1)[0] + (np.shape(X_class2)[0])) * np.cov(X_class2.T))
-    d = np.dot(np.linalg.inv(W), (u_class1 - u_class2))
+    try:
+      d = np.dot(np.linalg.inv(W), (u_class1 - u_class2))
+    except:
+      return 0
     B = np.dot((u_class1 - u_class2)[np.newaxis].T,(u_class1 - u_class2).reshape(1,(u_class1 - u_class2).shape[0]))
     dv = np.dot(np.dot(d.T, B), d)/ np.dot(np.dot(d.T, W), d)
     return dv
@@ -60,30 +72,31 @@ def ft_F1v(X: np.ndarray, ovo_comb: np.ndarray, cls_index: np.ndarray) ->float:
         y_class1 = cls_index[idx1]
         y_class2 = cls_index[idx2]
         dF = dVector(X, y_class1, y_class2)
+        if dF == 0:
+          continue
         df_list.append(dF)
     aux = np.mean(df_list)
     f1v = 1/(1+aux)
+    if math.isnan(f1v) == True:
+      f1v = 0.0
     return f1v
 
 """### 2.1.3 Volume of Overlapping Region (F2)¶"""
-
-b = [[1],[2],[3],[4]]
-b = np.asarray(b)
-np.dot(b, b.T)
-
-c = np.asarray([1, 2, 3, 4])[np.newaxis]
-c.T.shape
-
-d = np.asarray([1, 2, 3, 4]).reshape(1,4)
-d.shape
 
 def _minmax(X: np.ndarray, class1: np.ndarray, class2: np.ndarray) -> np.ndarray:
     """ This function computes the minimum of the maximum values per class
     for all features.
     """
     max_cls = np.zeros((2, X.shape[1]))
-    max_cls[0, :] = np.max(X[class1], axis=0)
-    max_cls[1, :] = np.max(X[class2], axis=0)
+
+    try:
+      max_cls[0, :] = np.max(X[class1], axis=0)
+    except:
+      print()
+    try:
+      max_cls[1, :] = np.max(X[class2], axis=0)
+    except:
+      print()
     aux = np.min(max_cls, axis=0)
     
     return aux
@@ -104,8 +117,16 @@ def _maxmin(X: np.ndarray, class1: np.ndarray, class2: np.ndarray) -> np.ndarray
     for all features.
     """
     min_cls = np.zeros((2, X.shape[1]))
-    min_cls[0, :] = np.min(X[class1], axis=0)
-    min_cls[1, :] = np.min(X[class2], axis=0)
+    
+    min_cls = np.zeros((2, X.shape[1]))
+    try:
+      min_cls[0, :] = np.min(X[class1], axis=0)
+    except:
+      print()
+    try:
+      min_cls[1, :] = np.min(X[class2], axis=0)
+    except:
+      print()
     aux = np.max(min_cls, axis=0)
     
     return aux
@@ -130,8 +151,14 @@ def ft_F2(X: np.ndarray, ovo_comb: np.ndarray, cls_index: np.ndarray) -> float:
         overlap_ = np.maximum(zero_, _minmax(X, y_class1, y_class2)-_maxmin(X, y_class1, y_class2))
         range_ = _maxmax(X, y_class1, y_class2)-_minmin(X, y_class1, y_class2)
         ratio = overlap_/range_
+        for i in range(ratio.shape[0]):
+          if math.isnan(ratio[i]) == True:
+            ratio[i] = 1
         f2_list.append(np.prod(ratio))
         
+    f2 = np.mean(f2_list)
+    if f2 == float("NaN"):
+      f2 = 0
     return np.mean(f2_list)
 
 """### 2.1.4 Maximum Individual Feature Efficiency (F3)"""
@@ -156,27 +183,6 @@ def ft_F3(X: np.ndarray, ovo_comb: np.ndarray, cls_index: np.ndarray, cls_n_ex: 
 
     return np.mean(f3)/len(cls_index)
 
-def ft_F3(X: np.ndarray, cls_index: np.ndarray, cls_n_ex: np.ndarray) -> np.ndarray:
-    
-    mima = np.zeros((X.shape[1]))
-    mami = np.zeros((X.shape[1]))
-    for i in range(X.shape[1]):
-        maxx = []
-        minn = []
-        for j in range(len(cls_n_ex)):
-            maxx.append(max(X[cls_index[j]][:,i]))
-            minn.append(min(X[cls_index[j]][:,i]))
-        mima[i] = min(maxx)
-        mami[i] = max(minn)
-#     print(mima, mami)
-    count = np.zeros((X.shape[1]))
-    for i in range(X.shape[1]):
-        for j in range(X.shape[0]):
-            
-              if X[j, i] > mami[i]:
-                    if X[j, i] < mima[i]:
-                          count[i] = count[i] + 1
-    return min(count)/X.shape[0]
 
 """### 2.1.5 Colective Feature Efficiency (F4)"""
 
