@@ -1,6 +1,6 @@
 # Classification-Complexity-Measures
 
-In this repository, the measures reviewed in article "How Complex is your classification problem? A survey on measuring classification complexity" have been implemented.
+In this repository, the measures reviewed in article [**"How Complex is your classification problem? A survey on measuring classification complexity"**](https://arxiv.org/abs/1808.03591) have been implemented.
 
 ## Feature-based Measures: ***overlapping.py***
 * Maximum Fisher’s Discriminant Ratio (F1)
@@ -29,9 +29,14 @@ In this repository, the measures reviewed in article "How Complex is your classi
 * Average density of the network (Density)
 * Clustering coefficient (ClsCoef)
 * Hub score (Hubs)
-* 
 
-## Dimensionality Measures
+
+## Dimensionality Measures: ***dimensionality.py***
 * Average number of features per dimension (T2)
 * Average number of PCA dimensions per points (T3)
 * Ratio of the PCA Dimension to the Original Dimension (T4)
+
+
+## Class Imbalance Measures: ***balance.py***
+* Entropy of class proportions (C1)
+* Imbalance ratio (C2)
