@@ -40,3 +40,21 @@ In this repository, the measures reviewed in article [**"How Complex is your cla
 ## Class Imbalance Measures: ***balance.py***
 * Entropy of class proportions (C1)
 * Imbalance ratio (C2)
+
+
+## Support
+
+**Contact me @:**
+
+e-mail:
+
+* farzanehkoohestani2000@gmail.com
+
+Telegram id:
+
+* [@farzaneh_koohestani](https://t.me/farzaneh_koohestani)
+
+## License
+[MIT](https://github.com/farkoo/Classification-Complexity-Measures/blob/master/LICENSE)
+&#0169; 
+[Farzaneh Koohestani](https://github.com/farkoo)
