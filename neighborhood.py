@@ -160,6 +160,8 @@ def hyper_final(centers, radius):
                 break
     return sphere_inst_num
 
+"""### 2.3.5 Fraction of Hyperspheres Covering Data (T1)"""
+
 def ft_T1(X, Y):
     nearest_enemy_ind = np.zeros(X.shape[0])
     nearest_enemy_dist = np.zeros(X.shape[0])
