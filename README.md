@@ -2,7 +2,7 @@
 
 In this repository, the measures reviewed in article "How Complex is your classification problem? A survey on measuring classification complexity" have been implemented.
 
-## Feature-based Measures ***overlapping.py***
+## Feature-based Measures: ***overlapping.py***
 * Maximum Fisher’s Discriminant Ratio (F1)
 * The Directional-vector Maximum Fisher’s Discriminant Ratio (F1v)
 * Volume of Overlapping Region (F2)
@@ -10,7 +10,13 @@ In this repository, the measures reviewed in article "How Complex is your classi
 * Collective Feature Efficiency (F4)
 
 
-## Neighborhood Measures
+## Measures of Linearity: ***linearity.py***
+* Sum of the Error Distance by Linear Programming (L1)
+* Error Rate of Linear Classifier (L2)
+* Non-Linearity of a Linear Classifier (L3)
+
+
+## Neighborhood Measures: ***neighborhood.py***
 * Fraction of Borderline Points (N1)
 * Ratio of Intra/Extra Class Nearest Neighbor Distance (N2)
 * Error Rate of the Nearest Neighbor Classifier (N3)
@@ -18,6 +24,12 @@ In this repository, the measures reviewed in article "How Complex is your classi
 * Fraction of Hyperspheres Covering Data (T1)
 * Local Set Average Cardinality (LSC)
 
+
+## Network Measures: ***network.py***
+* Average density of the network (Density)
+* Clustering coefficient (ClsCoef)
+* Hub score (Hubs)
+* 
 
 ## Dimensionality Measures
 * Average number of features per dimension (T2)
