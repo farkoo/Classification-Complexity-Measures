@@ -46,7 +46,7 @@ In this repository, the measures reviewed in article [**"How Complex is your cla
 
 **Contact me @:**
 
-e-mail:
+E-mail:
 
 * farzanehkoohestani2000@gmail.com
 
